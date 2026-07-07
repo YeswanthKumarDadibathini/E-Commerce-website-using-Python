@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ShopEasy | Online Shopping{% endblock %}</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Sticky Header -->
+    <header class="glass-header">
+        <div class="header-container">
+            <a href="{{ url_for('index') }}" class="logo-link">
+                <span class="logo-text">ShopEasy</span>
+                <span class="logo-dot">.</span>
+            </a>
+
+            <!-- Search Form with Suggestion Box -->
+            <div class="search-wrapper">
+                <form action="{{ url_for('search') }}" method="GET" class="search-form" id="searchForm">
+                    <input type="text" name="q" placeholder="Search for Products, Brands and More..." value="{{ q or '' }}" autocomplete="off" id="searchInput">
+                    <button type="submit" class="search-btn">🔍</button>
+                </form>
+                <div class="search-suggestions" id="searchSuggestions"></div>
+            </div>
+
+            <!-- Header Action Controls -->
+            <div class="header-actions">
+                {% if g.user %}
+                    <div class="user-dropdown">
+                        <button class="action-btn user-btn" id="userMenuBtn">
+                            👤 Welcome, {{ g.user['username'] }} <span class="arrow">▼</span>
+                        </button>
+                        <div class="dropdown-content" id="userDropdownContent">
+                            <a href="{{ url_for('orders') }}">📦 My Orders</a>
+                            {% if g.user['is_admin'] %}
+                                <a href="{{ url_for('admin_dashboard') }}">⚙️ Admin Panel</a>
+                            {% endif %}
+                            <hr>
+                            <a href="{{ url_for('logout') }}" class="logout-link">🚪 Logout</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="login-btn-link">Login</a>
+                {% endif %}
+
+                <a href="{{ url_for('wishlist') }}" class="wishlist-btn-link" title="Wishlist">
+                    <span class="wish-icon">❤️</span>
+                    <span class="wish-text">Wishlist</span>
+                    <span class="wish-badge" id="wishlistBadge">{{ g.wishlist_count }}</span>
+                </a>
+
+                <a href="{{ url_for('cart') }}" class="cart-btn">
+                    <span class="cart-icon">🛒</span>
+                    <span class="cart-text">Cart</span>
+                    <span class="cart-badge" id="cartBadge">{{ g.cart_count }}</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Flash Messages -->
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" role="alert">
+                        <span>{{ message }}</span>
+                        <button type="button" class="close-alert-btn" onclick="this.parentElement.remove();">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Floating Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-col">
+                <h3>ShopEasy</h3>
+                <p>Your one-stop destination for premium products at unbeatable prices.</p>
+            </div>
+            <div class="footer-col">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="{{ url_for('category', cat_name='mobiles') }}">Mobiles</a></li>
+                    <li><a href="{{ url_for('category', cat_name='laptops') }}">Laptops</a></li>
+                    <li><a href="{{ url_for('category', cat_name='electronics') }}">Electronics</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h3>Help & Support</h3>
+                <ul>
+                    <li><a href="mailto:dyeswanth1005@gmail.com">Contact Us: dyeswanth1005@gmail.com</a></li>
+                    <li><a href="#">Shipping & Returns</a></li>
+                    <li><a href="#">FAQ</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 ShopEasy | All Rights Reserved. Built with Python & Flask.</p>
+        </div>
+    </footer>
+
+    <!-- Client Script -->
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>

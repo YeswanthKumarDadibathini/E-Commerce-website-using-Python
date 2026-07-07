@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}My Wishlist | ShopEasy{% endblock %}
+
+{% block content %}
+<div class="wishlist-page-container">
+    
+    <div class="wishlist-header">
+        <h2>My Wishlist ({{ products|length }} saved items)</h2>
+    </div>
+
+    <!-- Empty Wishlist View -->
+    <div class="empty-wishlist-card {% if products %}hidden{% endif %}" id="emptyWishlistCard">
+        <span class="empty-wishlist-icon">❤️</span>
+        <h3>Your Wishlist is Empty!</h3>
+        <p>Explore products and click the heart icon on your favorite items to save them here.</p>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">Discover Products</a>
+    </div>
+
+    <!-- Wishlist Catalog Grid -->
+    {% if products %}
+        <div class="wishlist-grid" id="wishlistGrid">
+            {% for product in products %}
+                <div class="product-card" id="wishlistItem-{{ product['id'] }}">
+                    <div class="product-image-container" onclick="window.location.href='{{ url_for('product_detail', product_id=product['id']) }}'">
+                        <img src="{{ product['image_url'] }}" alt="{{ product['name'] }}" loading="lazy">
+                        <button class="remove-wishlist-badge-btn" data-product-id="{{ product['id'] }}" title="Remove from Wishlist">
+                            &times;
+                        </button>
+                    </div>
+                    <div class="product-info">
+                        <span class="product-cat">{{ product['category']|capitalize }}</span>
+                        <h3 class="product-title" onclick="window.location.href='{{ url_for('product_detail', product_id=product['id']) }}'">
+                            {{ product['name'] }}
+                        </h3>
+                        <div class="product-rating-row">
+                            <span class="rating-badge">{{ product['rating'] }} ★</span>
+                            <span class="stock-indicator {% if product['stock'] > 0 %}in-stock{% else %}low-stock{% endif %}">
+                                {% if product['stock'] > 0 %}In Stock{% else %}Sold Out{% endif %}
+                            </span>
+                        </div>
+                        <div class="product-price-action">
+                            <span class="product-price">{{ product['price']|format_price }}</span>
+                            {% if product['stock'] > 0 %}
+                                <button class="add-to-cart-btn btn-action" data-product-id="{{ product['id'] }}">
+                                    Add to Cart
+                                </button>
+                            {% else %}
+                                <button class="btn-action out-of-stock-btn" disabled>Out of Stock</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

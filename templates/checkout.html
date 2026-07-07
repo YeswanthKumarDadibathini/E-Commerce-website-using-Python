@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout | ShopEasy{% endblock %}
+
+{% block content %}
+<div class="checkout-page-container">
+    
+    <div class="checkout-header">
+        <h2>Order Checkout</h2>
+    </div>
+
+    <div class="checkout-layout">
+        <!-- Left: Forms -->
+        <div class="checkout-form-panel">
+            <form action="{{ url_for('checkout') }}" method="POST" id="checkoutForm">
+                <input type="hidden" name="promo_code" id="hiddenPromoInput" value="">
+                <!-- Address Section -->
+                <div class="checkout-section-card">
+                    <h3>1. Delivery Address</h3>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="addressInput">Full Shipping Address *</label>
+                            <textarea name="address" id="addressInput" rows="3" placeholder="Enter your full street address, apartment, city, state, zip code..." required class="form-control">{{ address or '' }}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="phoneInput">Contact Phone Number *</label>
+                            <input type="text" name="phone" id="phoneInput" placeholder="10-digit mobile number" value="{{ phone or '' }}" required class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Section -->
+                <div class="checkout-section-card">
+                    <h3>2. Select Payment Method</h3>
+                    <div class="payment-options">
+                        <!-- Cash on Delivery -->
+                        <label class="payment-option-card active">
+                            <input type="radio" name="payment_method" value="COD" checked id="payCOD">
+                            <div class="option-details">
+                                <span class="option-title">💵 Cash on Delivery (COD)</span>
+                                <span class="option-desc">Pay cash when your order is delivered to your doorstep. No extra fees.</span>
+                            </div>
+                        </label>
+
+                        <!-- UPI -->
+                        <label class="payment-option-card">
+                            <input type="radio" name="payment_method" value="UPI" id="payUPI">
+                            <div class="option-details">
+                                <span class="option-title">📱 UPI / Net Banking</span>
+                                <span class="option-desc">Pay instantly using your GPay, PhonePe, or BHIM account.</span>
+                                <div class="payment-fields hidden" id="upiFields">
+                                    <input type="text" placeholder="username@upi" class="form-control inline-input" id="upiIdInput">
+                                </div>
+                            </div>
+                        </label>
+
+                        <!-- Card -->
+                        <label class="payment-option-card">
+                            <input type="radio" name="payment_method" value="CARD" id="payCard">
+                            <div class="option-details">
+                                <span class="option-title">💳 Credit / Debit Card</span>
+                                <span class="option-desc">Securely pay using Visa, Mastercard, RuPay or Amex cards.</span>
+                                <div class="payment-fields hidden" id="cardFields">
+                                    <input type="text" placeholder="16-digit card number" class="form-control" id="cardNumberInput">
+                                    <div class="card-expiry-cvv">
+                                        <input type="text" placeholder="MM/YY" class="form-control" id="cardExpiryInput">
+                                        <input type="password" placeholder="CVV" class="form-control" id="cardCvvInput">
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="place-order-row">
+                    <button type="submit" class="btn btn-warning place-order-submit-btn">Place Order &amp; Finish</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Right: Checkout Sidebar -->
+        <aside class="checkout-summary-sidebar">
+            <div class="summary-card">
+                <h3>Order Summary</h3>
+                <hr>
+                <div class="checkout-items-list">
+                    {% for item in cart_items %}
+                        <div class="checkout-item-preview">
+                            <span class="item-name">{{ item['name'] }}</span>
+                            <span class="item-qty-price">{{ item['quantity'] }} x {{ item['price']|format_price }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+                <hr>
+                <div class="checkout-breakdown">
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span>{{ subtotal|format_price }}</span>
+                    </div>
+                    <div class="summary-row text-success">
+                        <span>Special Discount (5%)</span>
+                        <span>-{{ base_discount|format_price }}</span>
+                    </div>
+                    <div class="summary-row text-success hidden" id="couponDiscountRow">
+                        <span>Coupon Discount</span>
+                        <span id="checkoutCouponDiscount">-₹0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Delivery Charges</span>
+                        <span>
+                            {% if shipping == 0 %}
+                                <strong class="text-success">FREE</strong>
+                            {% else %}
+                                {{ shipping|format_price }}
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                <hr>
+
+                <!-- Promo Code Box -->
+                <div class="promo-code-box">
+                    <div class="promo-inputs">
+                        <input type="text" placeholder="Promo Code (e.g. SE10)" id="promoCodeInput" class="form-control promo-input">
+                        <button type="button" class="btn btn-secondary apply-promo-btn" id="applyPromoBtn">Apply</button>
+                    </div>
+                    <div class="promo-message text-success hidden" id="promoMessage"></div>
+                    <div class="coupon-suggestions">
+                        <span>Try: <strong class="code-pill">SE10</strong> (10% Off) or <strong class="code-pill">SUPER500</strong> (₹500 Off on orders above ₹2000)</span>
+                    </div>
+                </div>
+                <hr>
+
+                <div class="summary-row total-row">
+                    <span>Amount Payable</span>
+                    <span id="checkoutTotalVal">{{ total|format_price }}</span>
+                </div>
+                <p class="terms-note">By clicking 'Place Order', you agree to our Terms of Sale and Shipping Policies.</p>
+            </div>
+        </aside>
+    </div>
+
+</div>
+{% endblock %}

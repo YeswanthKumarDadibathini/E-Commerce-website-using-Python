@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}ShopEasy | Big Shopping Festival{% endblock %}
+
+{% block content %}
+<div class="homepage-container">
+    
+    <!-- Category Navigation Quickbar -->
+    <section class="category-quickbar">
+        <a href="{{ url_for('category', cat_name='mobiles') }}" class="cat-pill">
+            <span class="cat-icon-large">📱</span>
+            <span class="cat-label">Mobiles</span>
+        </a>
+        <a href="{{ url_for('category', cat_name='laptops') }}" class="cat-pill">
+            <span class="cat-icon-large">💻</span>
+            <span class="cat-label">Laptops</span>
+        </a>
+        <a href="{{ url_for('category', cat_name='fashion') }}" class="cat-pill">
+            <span class="cat-icon-large">👕</span>
+            <span class="cat-label">Fashion</span>
+        </a>
+        <a href="{{ url_for('category', cat_name='electronics') }}" class="cat-pill">
+            <span class="cat-icon-large">📺</span>
+            <span class="cat-label">Electronics</span>
+        </a>
+        <a href="{{ url_for('category', cat_name='home') }}" class="cat-pill">
+            <span class="cat-icon-large">🏠</span>
+            <span class="cat-label">Home & Kitchen</span>
+        </a>
+        <a href="{{ url_for('category', cat_name='toys') }}" class="cat-pill">
+            <span class="cat-icon-large">🧸</span>
+            <span class="cat-label">Toys & Games</span>
+        </a>
+    </section>
+
+    <!-- Dynamic Hero Promotional Banner Slider -->
+    <section class="slider-container">
+        <!-- Slide 1: Big Shopping Festival -->
+        <div class="hero-slide active" style="background: linear-gradient(135deg, #1264e3 0%, #0a3a91 100%);">
+            <div class="banner-overlay"></div>
+            <div class="banner-content">
+                <span class="banner-badge">FESTIVAL LIVE NOW</span>
+                <h1>Big Shopping Festival</h1>
+                <p>Grab up to <strong>70% OFF</strong> on Top Brands, Electronics, and Smart Devices.</p>
+                <div class="banner-ctas">
+                    <a href="{{ url_for('category', cat_name='mobiles') }}" class="btn btn-primary shop-now-btn">Shop Phones</a>
+                    <a href="{{ url_for('category', cat_name='laptops') }}" class="btn btn-secondary shop-now-btn">Explore Laptops</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Power Laptops -->
+        <div class="hero-slide" style="background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);">
+            <div class="banner-overlay"></div>
+            <div class="banner-content">
+                <span class="banner-badge">HIGH PERFORMANCE</span>
+                <h1>Work & Gaming Laptops</h1>
+                <p>Equipped with modern chips and fast graphic cards. Savings up to <strong>₹30,000</strong>.</p>
+                <div class="banner-ctas">
+                    <a href="{{ url_for('category', cat_name='laptops') }}" class="btn btn-primary shop-now-btn">Shop Laptops</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Fashion Deals -->
+        <div class="hero-slide" style="background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%);">
+            <div class="banner-overlay"></div>
+            <div class="banner-content">
+                <span class="banner-badge">STYLE UPGRADE</span>
+                <h1>Fashion Season Hits</h1>
+                <p>Express yourself with denim, premium shirts, and high-top sneakers. Up to <strong>50% OFF</strong>.</p>
+                <div class="banner-ctas">
+                    <a href="{{ url_for('category', cat_name='fashion') }}" class="btn btn-primary shop-now-btn">Shop Fashion</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slider Arrows -->
+        <button class="slide-nav prev-slide" id="prevSlideBtn">&#10094;</button>
+        <button class="slide-nav next-slide" id="nextSlideBtn">&#10095;</button>
+
+        <!-- Slider Dots -->
+        <div class="slider-dots">
+            <span class="dot active" data-slide-index="0"></span>
+            <span class="dot" data-slide-index="1"></span>
+            <span class="dot" data-slide-index="2"></span>
+        </div>
+    </section>
+
+    <!-- Featured Products Section -->
+    <section class="section-container">
+        <div class="section-header">
+            <h2>🔥 Featured Products</h2>
+            <span class="subtext">Handpicked premium items with top customer ratings</span>
+        </div>
+        
+        <div class="product-grid">
+            {% for product in featured %}
+                <div class="product-card">
+                    <div class="product-image-container" onclick="window.location.href='{{ url_for('product_detail', product_id=product['id']) }}'">
+                        <img src="{{ product['image_url'] }}" alt="{{ product['name'] }}" loading="lazy">
+                        {% if product['rating'] >= 4.5 %}
+                            <span class="card-badge gold">Top Rated</span>
+                        {% endif %}
+                        <button class="wishlist-toggle-btn {% if product['id'] in g.wishlist_item_ids %}active{% endif %}" data-product-id="{{ product['id'] }}" onclick="event.stopPropagation();">
+                            {% if product['id'] in g.wishlist_item_ids %}❤️{% else %}🤍{% endif %}
+                        </button>
+                    </div>
+                    <div class="product-info">
+                        <span class="product-cat">{{ product['category']|capitalize }}</span>
+                        <h3 class="product-title" onclick="window.location.href='{{ url_for('product_detail', product_id=product['id']) }}'">
+                            {{ product['name'] }}
+                        </h3>
+                        <div class="product-rating-row">
+                            <span class="rating-badge">{{ product['rating'] }} ★</span>
+                            <span class="stock-indicator {% if product['stock'] > 10 %}in-stock{% else %}low-stock{% endif %}">
+                                {% if product['stock'] > 0 %}
+                                    In Stock ({{ product['stock'] }})
+                                {% else %}
+                                    Out of Stock
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="product-price-action">
+                            <span class="product-price">{{ product['price']|format_price }}</span>
+                            <button class="add-to-cart-btn btn-action" data-product-id="{{ product['id'] }}">
+                                Add 🛒
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Top Deals Section -->
+    <section class="section-container bg-light">
+        <div class="section-header">
+            <h2>⭐ Super Value Deals</h2>
+            <span class="subtext">Incredible prices on high quality items</span>
+        </div>
+        
+        <div class="product-grid">
+            {% for product in top_deals %}
+                <div class="product-card">
+                    <div class="product-image-container" onclick="window.location.href='{{ url_for('product_detail', product_id=product['id']) }}'">
+                        <img src="{{ product['image_url'] }}" alt="{{ product['name'] }}" loading="lazy">
+                        <span class="card-badge deal">Best Deal</span>
+                        <button class="wishlist-toggle-btn {% if product['id'] in g.wishlist_item_ids %}active{% endif %}" data-product-id="{{ product['id'] }}" onclick="event.stopPropagation();">
+                            {% if product['id'] in g.wishlist_item_ids %}❤️{% else %}🤍{% endif %}
+                        </button>
+                    </div>
+                    <div class="product-info">
+                        <span class="product-cat">{{ product['category']|capitalize }}</span>
+                        <h3 class="product-title" onclick="window.location.href='{{ url_for('product_detail', product_id=product['id']) }}'">
+                            {{ product['name'] }}
+                        </h3>
+                        <div class="product-rating-row">
+                            <span class="rating-badge bg-grey">{{ product['rating'] }} ★</span>
+                        </div>
+                        <div class="product-price-action">
+                            <span class="product-price text-highlight">{{ product['price']|format_price }}</span>
+                            <button class="add-to-cart-btn btn-action secondary" data-product-id="{{ product['id'] }}">
+                                Add 🛒
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+</div>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | ShopEasy{% endblock %}
+
+{% block content %}
+<div class="category-page-container">
+    
+    <!-- Left Sidebar: Filters & Sorting -->
+    <aside class="filter-sidebar">
+        <div class="sidebar-header">
+            <h3>Filters & Sorting</h3>
+            {% if category == 'search' %}
+                <a href="{{ url_for('search', q=q) }}" class="clear-all-link">Clear All</a>
+            {% else %}
+                <a href="{{ url_for('category', cat_name=category) }}" class="clear-all-link">Clear All</a>
+            {% endif %}
+        </div>
+        
+        <form action="{{ request.path }}" method="GET" class="filter-form" id="filterForm">
+            <!-- Hidden query parameter to preserve search if active -->
+            {% if q and category == 'search' %}
+                <input type="hidden" name="q" value="{{ q }}">
+            {% endif %}
+
+            <!-- Sort Section -->
+            <div class="filter-section">
+                <h4>Sort By</h4>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="sort_by" value="popular" {% if sort_by == 'popular' or not sort_by %}checked{% endif %} onchange="this.form.submit()">
+                        Popularity
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="sort_by" value="price_asc" {% if sort_by == 'price_asc' %}checked{% endif %} onchange="this.form.submit()">
+                        Price: Low to High
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="sort_by" value="price_desc" {% if sort_by == 'price_desc' %}checked{% endif %} onchange="this.form.submit()">
+                        Price: High to Low
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="sort_by" value="rating_desc" {% if sort_by == 'rating_desc' %}checked{% endif %} onchange="this.form.submit()">
+                        Customer Rating
+                    </label>
+                </div>
+            </div>
+
+            <!-- Price Range Section -->
+            <div class="filter-section">
+                <h4>Price Range</h4>
+                <div class="price-inputs">
+                    <div class="input-col">
+                        <label>Min (₹)</label>
+                        <input type="number" name="min_price" placeholder="{{ min_bound }}" value="{{ min_price or '' }}" min="0">
+                    </div>
+                    <div class="input-col">
+                        <label>Max (₹)</label>
+                        <input type="number" name="max_price" placeholder="{{ max_bound }}" value="{{ max_price or '' }}" min="0">
+                    </div>
+                </div>
+                {% if category != 'search' %}
+                <div class="search-within">
+                    <label>Search in Category</label>
+                    <input type="text" name="q" placeholder="Type keywords..." value="{{ q or '' }}">
+                </div>
+                {% endif %}
+                <button type="submit" class="btn btn-secondary apply-filters-btn">Apply Filters</button>
+            </div>
+        </form>
+    </aside>
+
+    <!-- Right Column: Product Results -->
+    <section class="products-results-area">
+        <div class="results-header">
+            <h2>{{ title }}</h2>
+            <p class="results-count">{{ products|length }} items found</p>
+        </div>
+
+        {% if products %}
+            <div class="product-grid">
+                {% for product in products %}
+                    <div class="product-card">
+                        <div class="product-image-container" onclick="window.location.href='{{ url_for('product_detail', product_id=product['id']) }}'">
+                            <img src="{{ product['image_url'] }}" alt="{{ product['name'] }}" loading="lazy">
+                            <button class="wishlist-toggle-btn {% if product['id'] in g.wishlist_item_ids %}active{% endif %}" data-product-id="{{ product['id'] }}" onclick="event.stopPropagation();">
+                                {% if product['id'] in g.wishlist_item_ids %}❤️{% else %}🤍{% endif %}
+                            </button>
+                        </div>
+                        <div class="product-info">
+                            <span class="product-cat">{{ product['category']|capitalize }}</span>
+                            <h3 class="product-title" onclick="window.location.href='{{ url_for('product_detail', product_id=product['id']) }}'">
+                                {{ product['name'] }}
+                            </h3>
+                            <div class="product-rating-row">
+                                <span class="rating-badge">{{ product['rating'] }} ★</span>
+                                <span class="stock-indicator {% if product['stock'] > 0 %}in-stock{% else %}low-stock{% endif %}">
+                                    {% if product['stock'] > 5 %}
+                                        In Stock
+                                    {% elif product['stock'] > 0 %}
+                                        Only {{ product['stock'] }} left!
+                                    {% else %}
+                                        Out of Stock
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="product-price-action">
+                                <span class="product-price">{{ product['price']|format_price }}</span>
+                                {% if product['stock'] > 0 %}
+                                    <button class="add-to-cart-btn btn-action" data-product-id="{{ product['id'] }}">
+                                        Add To Cart 🛒
+                                    </button>
+                                {% else %}
+                                    <button class="btn-action out-of-stock-btn" disabled>
+                                        Sold Out
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- No results view -->
+            <div class="no-results-card">
+                <span class="empty-icon">🔍</span>
+                <h3>No Products Found</h3>
+                <p>We couldn't find any items matching your filters or search keywords. Try adjusting your price ranges or search queries.</p>
+                <a href="{{ request.path }}" class="btn btn-primary">Reset Filters</a>
+            </div>
+        {% endif %}
+    </section>
+
+</div>
+{% endblock %}

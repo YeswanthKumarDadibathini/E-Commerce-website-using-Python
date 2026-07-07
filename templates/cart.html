@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Shopping Cart | ShopEasy{% endblock %}
+
+{% block content %}
+<div class="cart-page-container">
+    
+    <div class="cart-header">
+        <h2>Shopping Cart ({{ summary['item_count'] }} items)</h2>
+    </div>
+
+    <!-- Empty Cart Template -->
+    <div class="empty-cart-card {% if items %}hidden{% endif %}" id="emptyCartCard">
+        <span class="empty-cart-icon">🛒</span>
+        <h3>Your Cart is Empty!</h3>
+        <p>Explore our wide range of mobiles, laptops, fashion, and electronics to add items.</p>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">Shop Now</a>
+    </div>
+
+    <!-- Cart Layout -->
+    <div class="cart-layout {% if not items %}hidden{% endif %}" id="cartLayout">
+        <!-- Left: Cart Items List -->
+        <div class="cart-items-panel">
+            {% for item in items %}
+                <div class="cart-item-row" data-product-id="{{ item['product_id'] }}" id="cartItemRow-{{ item['product_id'] }}">
+                    <div class="item-img-col">
+                        <img src="{{ item['image_url'] }}" alt="{{ item['name'] }}">
+                    </div>
+                    
+                    <div class="item-details-col">
+                        <h3 class="item-title"><a href="{{ url_for('product_detail', product_id=item['product_id']) }}">{{ item['name'] }}</a></h3>
+                        <p class="item-price">{{ item['price']|format_price }}</p>
+                        
+                        <div class="quantity-controls">
+                            <button class="qty-btn qty-minus" data-product-id="{{ item['product_id'] }}">-</button>
+                            <span class="qty-display" id="qty-val-{{ item['product_id'] }}">{{ item['quantity'] }}</span>
+                            <button class="qty-btn qty-plus" data-product-id="{{ item['product_id'] }}">+</button>
+                            
+                            <span class="qty-warning hidden" id="qty-warning-{{ item['product_id'] }}">Max stock reached</span>
+                        </div>
+                    </div>
+                    
+                    <div class="item-total-col">
+                        <span class="item-subtotal-val" id="item-subtotal-{{ item['product_id'] }}">
+                            {{ (item['price'] * item['quantity'])|format_price }}
+                        </span>
+                        <button class="remove-item-btn" data-product-id="{{ item['product_id'] }}">Remove</button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Right: Price Summary Sidebar -->
+        <aside class="cart-summary-sidebar">
+            <div class="summary-card">
+                <h3>Price Details</h3>
+                <hr>
+                <div class="summary-row">
+                    <span>Price (<span id="summary-count">{{ summary['item_count'] }}</span> items)</span>
+                    <span id="summary-subtotal">{{ summary['subtotal']|format_price }}</span>
+                </div>
+                <div class="summary-row text-success">
+                    <span>Discount (5% Promo)</span>
+                    <span id="summary-discount">-{{ summary['discount']|format_price }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Delivery Charges</span>
+                    <span id="summary-shipping">
+                        {% if summary['shipping'] == 0 %}
+                            <strong class="text-success">FREE</strong>
+                        {% else %}
+                            {{ summary['shipping']|format_price }}
+                        {% endif %}
+                    </span>
+                </div>
+                <hr>
+                <div class="summary-row total-row">
+                    <span>Total Amount</span>
+                    <span id="summary-total">{{ summary['total']|format_price }}</span>
+                </div>
+                
+                <div class="savings-note text-success">
+                    You will save <strong id="summary-savings">{{ summary['discount']|format_price }}</strong> on this order!
+                </div>
+                
+                <a href="{{ url_for('checkout') }}" class="btn btn-warning checkout-btn">Proceed to Checkout</a>
+            </div>
+        </aside>
+    </div>
+
+</div>
+{% endblock %}

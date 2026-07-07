@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Account Access | ShopEasy{% endblock %}
+
+{% block content %}
+<div class="auth-page-container">
+    
+    <div class="auth-card">
+        <!-- Tab Headers -->
+        <div class="auth-tabs-header">
+            <button class="auth-tab-btn {% if active_tab == 'login' or not active_tab %}active{% endif %}" id="loginTabBtn">Sign In</button>
+            <button class="auth-tab-btn {% if active_tab == 'register' %}active{% endif %}" id="registerTabBtn">Create Account</button>
+        </div>
+
+        <!-- Hidden input to hold redirect path after successful auth -->
+        {% if next %}
+            <input type="hidden" name="next_redirect" value="{{ next }}" id="nextRedirectInput">
+        {% endif %}
+
+        <!-- SIGN IN FORM PANEL -->
+        <div class="auth-panel-body {% if active_tab == 'register' %}hidden{% endif %}" id="loginPanel">
+            <div class="panel-intro">
+                <h2>Welcome Back!</h2>
+                <p>Access your shopping cart, past orders, and review products.</p>
+            </div>
+            
+            <form action="{{ url_for('login') }}" method="POST" class="auth-form">
+                <input type="hidden" name="action" value="login">
+                {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                {% endif %}
+
+                <div class="form-group">
+                    <label for="loginUser">Username or Email Address *</label>
+                    <input type="text" name="username_or_email" id="loginUser" required placeholder="Enter username or email" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPass">Password *</label>
+                    <input type="password" name="password" id="loginPass" required placeholder="Enter password" class="form-control">
+                </div>
+
+                <button type="submit" class="btn btn-primary auth-submit-btn">Sign In</button>
+            </form>
+            
+            <div class="demo-credentials">
+                <h4>Demo Accounts:</h4>
+                <p><strong>Standard Buyer:</strong> user / user123</p>
+                <p><strong>Admin Store Manager:</strong> admin / admin123</p>
+            </div>
+        </div>
+
+        <!-- REGISTRATION FORM PANEL -->
+        <div class="auth-panel-body {% if active_tab == 'login' or not active_tab %}hidden{% endif %}" id="registerPanel">
+            <div class="panel-intro">
+                <h2>Join ShopEasy</h2>
+                <p>Create a buyer account to start placing orders.</p>
+            </div>
+
+            <form action="{{ url_for('login') }}" method="POST" class="auth-form">
+                <input type="hidden" name="action" value="register">
+                {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                {% endif %}
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="regUser">Username *</label>
+                        <input type="text" name="username" id="regUser" required placeholder="Choose a username" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regEmail">Email Address *</label>
+                        <input type="email" name="email" id="regEmail" required placeholder="name@domain.com" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regPass">Password *</label>
+                        <input type="password" name="password" id="regPass" required placeholder="At least 6 characters" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regPassConf">Confirm Password *</label>
+                        <input type="password" name="confirm_password" id="regPassConf" required placeholder="Re-type password" class="form-control">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="regAddr">Default Delivery Address</label>
+                        <textarea name="address" id="regAddr" rows="2" placeholder="Street, city, state, zip code (optional)" class="form-control"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regPhone">Contact Phone Number</label>
+                        <input type="text" name="phone" id="regPhone" placeholder="10-digit number (optional)" class="form-control">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-warning auth-submit-btn">Create Account &amp; Login</button>
+            </form>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Internal toggle behavior -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const loginTabBtn = document.getElementById('loginTabBtn');
+        const registerTabBtn = document.getElementById('registerTabBtn');
+        const loginPanel = document.getElementById('loginPanel');
+        const registerPanel = document.getElementById('registerPanel');
+
+        loginTabBtn.addEventListener('click', function() {
+            loginTabBtn.classList.add('active');
+            registerTabBtn.classList.remove('active');
+            loginPanel.classList.remove('hidden');
+            registerPanel.classList.add('hidden');
+        });
+
+        registerTabBtn.addEventListener('click', function() {
+            registerTabBtn.classList.add('active');
+            loginTabBtn.classList.remove('active');
+            registerPanel.classList.remove('hidden');
+            loginPanel.classList.add('hidden');
+        });
+    });
+</script>
+{% endblock %}

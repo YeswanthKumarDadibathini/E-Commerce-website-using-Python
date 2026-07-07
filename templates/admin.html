@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard | ShopEasy{% endblock %}
+
+{% block content %}
+<div class="admin-page-container">
+    
+    <div class="admin-header">
+        <h2>Administrator Control Panel</h2>
+        <p>Manage orders, update delivery statuses, and restock products.</p>
+    </div>
+
+    <!-- Statistics widgets -->
+    <section class="admin-stats-grid">
+        <div class="stat-card">
+            <span class="stat-icon">💰</span>
+            <div class="stat-info">
+                <span class="stat-lbl">Total Sales Revenue</span>
+                <span class="stat-val text-success">{{ total_sales|format_price }}</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-icon">📦</span>
+            <div class="stat-info">
+                <span class="stat-lbl">Total Orders Placed</span>
+                <span class="stat-val">{{ total_orders }}</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-icon">👤</span>
+            <div class="stat-info">
+                <span class="stat-lbl">Customers Registered</span>
+                <span class="stat-val">{{ total_users }}</span>
+            </div>
+        </div>
+        <div class="stat-card {% if low_stock_count > 0 %}alert-warning-card{% endif %}">
+            <span class="stat-icon">⚠️</span>
+            <div class="stat-info">
+                <span class="stat-lbl">Low Stock Alerts</span>
+                <span class="stat-val {% if low_stock_count > 0 %}text-danger{% endif %}">{{ low_stock_count }} items</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin controls navigation tabs -->
+    <div class="admin-control-box">
+        <div class="admin-tabs-header">
+            <button class="admin-tab-btn active" id="ordersTabBtn">Order Tracking</button>
+            <button class="admin-tab-btn" id="inventoryTabBtn">Inventory Control</button>
+        </div>
+
+        <!-- ORDERS TAB PANEL -->
+        <div class="admin-panel-body" id="ordersPanel">
+            <h3>Manage User Orders</h3>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Items Purchased</th>
+                            <th>Total Price</th>
+                            <th>Status Badge</th>
+                            <th>Set Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if orders %}
+                            {% for order in orders %}
+                                <tr id="orderRow-{{ order['details']['id'] }}">
+                                    <td><strong>#SE-100{{ order['details']['id'] }}</strong></td>
+                                    <td>{{ order['details']['date'] }}</td>
+                                    <td>
+                                        <div>{{ order['details']['username'] }}</div>
+                                        <div class="sub-text">{{ order['details']['email'] }}</div>
+                                    </td>
+                                    <td>
+                                        <ul class="order-items-list-cell">
+                                            {% for item in order['items'] %}
+                                                <li>{{ item['name'] }} (x{{ item['quantity'] }})</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </td>
+                                    <td><strong class="price">{{ order['details']['total_price']|format_price }}</strong></td>
+                                    <td>
+                                        <span class="status-badge {{ order['details']['status']|lower }}" id="statusBadge-{{ order['details']['id'] }}">
+                                            {{ order['details']['status'] }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <select class="form-control status-select" data-order-id="{{ order['details']['id'] }}">
+                                            <option value="Processing" {% if order['details']['status'] == 'Processing' %}selected{% endif %}>Processing</option>
+                                            <option value="Shipped" {% if order['details']['status'] == 'Shipped' %}selected{% endif %}>Shipped</option>
+                                            <option value="Delivered" {% if order['details']['status'] == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="no-records">No orders placed on the system yet.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- INVENTORY TAB PANEL -->
+        <div class="admin-panel-body hidden" id="inventoryPanel">
+            <h3>Update Product Stock levels</h3>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Item Image</th>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Stock Count</th>
+                            <th>Adjust Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                            <tr>
+                                <td class="tbl-img-col">
+                                    <img src="{{ product['image_url'] }}" alt="{{ product['name'] }}">
+                                </td>
+                                <td>
+                                    <strong>{{ product['name'] }}</strong>
+                                    <div class="sub-text">Product ID: #{{ product['id'] }}</div>
+                                </td>
+                                <td><span class="category-tag">{{ product['category']|capitalize }}</span></td>
+                                <td>{{ product['price']|format_price }}</td>
+                                <td>
+                                    <span class="stock-count-cell {% if product['stock'] <= 5 %}low{% endif %}" id="stockCell-{{ product['id'] }}">
+                                        {{ product['stock'] }} units
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="stock-update-input-group">
+                                        <input type="number" value="{{ product['stock'] }}" min="0" class="form-control stock-input" id="stockInput-{{ product['id'] }}">
+                                        <button class="btn btn-primary btn-save-stock" data-product-id="{{ product['id'] }}">Save</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Simple tab selection switching behavior -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ordersTabBtn = document.getElementById('ordersTabBtn');
+        const inventoryTabBtn = document.getElementById('inventoryTabBtn');
+        const ordersPanel = document.getElementById('ordersPanel');
+        const inventoryPanel = document.getElementById('inventoryPanel');
+
+        ordersTabBtn.addEventListener('click', function() {
+            ordersTabBtn.classList.add('active');
+            inventoryTabBtn.classList.remove('active');
+            ordersPanel.classList.remove('hidden');
+            inventoryPanel.classList.add('hidden');
+        });
+
+        inventoryTabBtn.addEventListener('click', function() {
+            inventoryTabBtn.classList.add('active');
+            ordersTabBtn.classList.remove('active');
+            inventoryPanel.classList.remove('hidden');
+            ordersPanel.classList.add('hidden');
+        });
+    });
+</script>
+{% endblock %}

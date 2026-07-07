@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product['name'] }} | ShopEasy{% endblock %}
+
+{% block content %}
+<div class="product-page-container">
+    
+    <!-- Breadcrumbs -->
+    <nav class="breadcrumbs">
+        <a href="{{ url_for('index') }}">Home</a> &gt; 
+        <a href="{{ url_for('category', cat_name=product['category']) }}">{{ product['category']|capitalize }}</a> &gt; 
+        <span>{{ product['name'] }}</span>
+    </nav>
+
+    <div class="product-main-layout">
+        <!-- Left: Image and CTAs -->
+        <div class="product-media-panel">
+            <div class="large-image-frame">
+                <img src="{{ product['image_url'] }}" alt="{{ product['name'] }}" id="mainProductImg">
+                <button class="wishlist-toggle-btn details-wish-toggle {% if is_wishlisted %}active{% endif %}" data-product-id="{{ product['id'] }}">
+                    {% if is_wishlisted %}❤️{% else %}🤍{% endif %}
+                </button>
+            </div>
+            
+            <div class="media-actions">
+                {% if product['stock'] > 0 %}
+                    <button class="btn btn-warning buy-now-btn" data-product-id="{{ product['id'] }}">
+                        ⚡ Buy Now
+                    </button>
+                    <button class="btn btn-primary add-to-cart-btn" data-product-id="{{ product['id'] }}">
+                        🛒 Add to Cart
+                    </button>
+                {% else %}
+                    <button class="btn out-of-stock-cta" disabled>
+                        Out of Stock
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right: Details and Specs -->
+        <div class="product-details-panel">
+            <h1 class="details-title">{{ product['name'] }}</h1>
+            
+            <div class="details-rating-row">
+                <span class="rating-badge large">{{ avg_rating }} ★</span>
+                <span class="reviews-count">{{ review_count }} Ratings & Reviews</span>
+            </div>
+
+            <div class="details-price-row">
+                <span class="price-val">{{ product['price']|format_price }}</span>
+                <span class="delivery-tag">Free Delivery available</span>
+            </div>
+
+            <div class="details-stock-row">
+                {% if product['stock'] > 10 %}
+                    <span class="stock-badge in-stock">In Stock</span>
+                {% elif product['stock'] > 0 %}
+                    <span class="stock-badge low-stock">Only {{ product['stock'] }} left in stock!</span>
+                {% else %}
+                    <span class="stock-badge out-of-stock">Temporarily Out of Stock</span>
+                {% endif %}
+            </div>
+
+            <div class="details-desc-box">
+                <h3>Product Description</h3>
+                <p>{{ product['description'] }}</p>
+            </div>
+
+            <!-- Specifications Table -->
+            <div class="details-specs-box">
+                <h3>Technical Specifications</h3>
+                <table class="specs-table">
+                    <tbody>
+                        {% if specs %}
+                            {% for key, val in specs.items() %}
+                                <tr>
+                                    <td class="spec-key">{{ key }}</td>
+                                    <td class="spec-val">{{ val }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="2" class="no-specs">Standard model specifications apply.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <hr class="section-divider">
+    
+    <section class="reviews-section">
+        <div class="reviews-header">
+            <h2>Customer Reviews & Ratings</h2>
+            <div class="overall-rating-container">
+                <div class="overall-rating-card">
+                    <span class="avg-stars">{{ avg_rating }}</span>
+                    <span class="avg-label">out of 5 stars</span>
+                    <span class="total-reviews-count">{{ review_count }} ratings</span>
+                </div>
+                <div class="rating-breakdown-box">
+                    {% for star in [5, 4, 3, 2, 1] %}
+                        {% set count = reviews|selectattr('rating', 'equalto', star)|list|length %}
+                        {% if review_count > 0 %}
+                            {% set pct = (count / review_count * 100)|int %}
+                        {% else %}
+                            {% set pct = 0 %}
+                        {% endif %}
+                        <div class="rating-bar-row">
+                            <span class="bar-lbl">{{ star }} ★</span>
+                            <div class="bar-outer">
+                                <div class="bar-inner" style="width: {{ pct }}%;"></div>
+                            </div>
+                            <span class="bar-pct">{{ pct }}%</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="reviews-layout">
+            <!-- Left: Reviews List -->
+            <div class="reviews-list-col">
+                <h3>Customer Feedback</h3>
+                {% if reviews %}
+                    {% for review in reviews %}
+                        <div class="review-card">
+                            <div class="review-meta">
+                                <span class="review-stars">{{ review['rating'] }} ★</span>
+                                <strong class="review-author">{{ review['username'] }}</strong>
+                                <span class="verified-badge">✔ Verified Purchase</span>
+                                <span class="review-date">{{ review['date'] }}</span>
+                            </div>
+                            <p class="review-comment">{{ review['comment'] }}</p>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-reviews">
+                        <p>No reviews yet. Be the first to review this product!</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Right: Submit Review Form -->
+            <div class="review-form-col">
+                <div class="review-form-card">
+                    <h3>Write a Review</h3>
+                    {% if g.user %}
+                        <form action="{{ url_for('api_add_review', product_id=product['id']) }}" method="POST" class="review-submit-form">
+                            <div class="form-group">
+                                <label for="ratingSelect">Your Rating *</label>
+                                <select name="rating" id="ratingSelect" required class="form-control">
+                                    <option value="">Choose star score...</option>
+                                    <option value="5">5 Stars - Excellent</option>
+                                    <option value="4">4 Stars - Good</option>
+                                    <option value="3">3 Stars - Average</option>
+                                    <option value="2">2 Stars - Poor</option>
+                                    <option value="1">1 Star - Very Bad</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="commentInput">Detailed Review *</label>
+                                <textarea name="comment" id="commentInput" rows="4" placeholder="What did you like or dislike? How is the quality?" required class="form-control"></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary submit-review-btn">Submit Review</button>
+                        </form>
+                    {% else %}
+                        <div class="login-prompt">
+                            <p>You must be signed in to submit a rating or review.</p>
+                            <a href="{{ url_for('login', next=request.url) }}" class="btn btn-secondary">Login to Account</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

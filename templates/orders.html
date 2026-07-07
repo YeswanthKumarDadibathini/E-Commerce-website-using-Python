@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}My Orders | ShopEasy{% endblock %}
+
+{% block content %}
+<div class="orders-page-container">
+    
+    <div class="orders-header">
+        <h2>My Orders</h2>
+        <p>Track progress and review past orders</p>
+    </div>
+
+    <!-- Empty Orders template -->
+    {% if not orders %}
+        <div class="no-orders-card">
+            <span class="orders-empty-icon">📦</span>
+            <h3>No Orders Placed Yet!</h3>
+            <p>You haven't placed any orders yet. Visit our homepage to explore products.</p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">Start Shopping</a>
+        </div>
+    {% else %}
+        <!-- List of Orders -->
+        <div class="orders-list">
+            {% for order in orders %}
+                <div class="order-card">
+                    <!-- Order Header Details -->
+                    <div class="order-card-header">
+                        <div class="header-col">
+                            <span class="lbl">ORDER ID</span>
+                            <span class="val">#SE-100{{ order['details']['id'] }}</span>
+                        </div>
+                        <div class="header-col">
+                            <span class="lbl">DATE PLACED</span>
+                            <span class="val">{{ order['details']['date'] }}</span>
+                        </div>
+                        <div class="header-col">
+                            <span class="lbl">TOTAL AMOUNT</span>
+                            <span class="val highlight">{{ order['details']['total_price']|format_price }}</span>
+                        </div>
+                        <div class="header-col">
+                            <span class="lbl">PAYMENT METHOD</span>
+                            <span class="val">{{ order['details']['payment_method'] }}</span>
+                        </div>
+                        <div class="status-col">
+                            <span class="status-badge {{ order['details']['status']|lower }}">
+                                {{ order['details']['status'] }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Order Items Details -->
+                    <div class="order-card-body">
+                        {% for item in order['items'] %}
+                            <div class="order-item-row">
+                                <div class="item-img">
+                                    <img src="{{ item['image_url'] }}" alt="{{ item['name'] }}">
+                                </div>
+                                <div class="item-info">
+                                    <h4>
+                                        <a href="{{ url_for('product_detail', product_id=item['product_id']) }}">
+                                            {{ item['name'] }}
+                                        </a>
+                                    </h4>
+                                    <p class="qty-price">Qty: {{ item['quantity'] }} &bull; {{ item['price_at_purchase']|format_price }}</p>
+                                </div>
+                                <div class="item-actions">
+                                    <a href="{{ url_for('product_detail', product_id=item['product_id']) }}#commentInput" class="btn btn-secondary write-review-shortcut-btn">
+                                        ★ Rate &amp; Review
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Order Footer Address info -->
+                    <div class="order-card-footer">
+                        <p><strong>Shipping Address:</strong> {{ order['details']['address'] }} &bull; <strong>Contact:</strong> {{ order['details']['phone'] }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}
