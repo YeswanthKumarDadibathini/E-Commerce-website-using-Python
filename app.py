@@ -9,6 +9,12 @@ app = Flask(__name__)
 app.secret_key = 'shopeasy_secret_key_change_in_production'
 
 DB_PATH = 'shop.db'
+if os.environ.get('VERCEL') == '1':
+    import shutil
+    temp_db = '/tmp/shop.db'
+    if not os.path.exists(temp_db):
+        shutil.copy('shop.db', temp_db)
+    DB_PATH = temp_db
 
 def get_db():
     db = getattr(g, '_database', None)
